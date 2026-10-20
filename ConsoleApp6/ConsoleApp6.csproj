@@ -7,4 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Carbon.WebApplication.EntityFrameworkCore" Version="2.6.1" />
+    <PackageReference Include="EventFlow" Version="1.2.3" />
+  </ItemGroup>
+
 </Project>
