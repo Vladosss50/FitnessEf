@@ -1,8 +1,23 @@
-﻿using Npgsql;
+﻿using FitnessEf;
+using Microsoft.EntityFrameworkCore;
 
-var connectString = "Host=localhost;Port=5432;Database=Fitnes;Username=postgres;Password=ВАШ_ПАРОЛЬ";
+Environment.SetEnvironmentVariable("FITNESS_EF_CONNECTION", "Host=localhost;Port=5432;Database=FitnessEfTraining;Username=postgres;Password=123");
 
-using var connection = new NpgsqlConnection(connectString);
+using var context = new FitnessContext();
 
-connection.Open();
-Console.WriteLine("Подключение к БД успешно!");
+try
+{
+    Console.WriteLine("Проверка подключения...");
+    if (context.Database.CanConnect())
+    {
+        Console.WriteLine("Подключение успешно! Создаем таблицы...");
+
+        context.Database.Migrate();
+
+        Console.WriteLine("Таблицы успешно созданы!");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Ошибка: {ex.Message}");
+}

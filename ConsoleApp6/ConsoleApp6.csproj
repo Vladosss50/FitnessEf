@@ -10,6 +10,10 @@
   <ItemGroup>
     <PackageReference Include="Carbon.WebApplication.EntityFrameworkCore" Version="2.6.1" />
     <PackageReference Include="EventFlow" Version="1.2.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
