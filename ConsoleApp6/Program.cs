@@ -7,10 +7,10 @@ await using var db = new FitnessContext();
 
 while (true)
 {
-    Console.WriteLine("\n--- МЕНЮ ЗАДАНИЯ 6 (Добавление данных) ---");
-    Console.WriteLine("1. Добавить тестового клиента (Дмитрий Соколов) ");
-    Console.WriteLine("2. Добавить клиента с проверкой ввода ");
-    Console.WriteLine("3. Добавить клиента с обработкой ошибок ");
+    Console.WriteLine("\n--- МЕНЮ ЗАДАНИЯ 7 ");
+    Console.WriteLine("1. Изменить телефон клиента ");
+    Console.WriteLine("2. Удалить клиента ");
+    Console.WriteLine("3. Выполнить несколько действий сразу ");
     Console.WriteLine("0. Выход");
     Console.Write("Выберите пункт: ");
 
@@ -19,73 +19,54 @@ while (true)
     switch (choice)
     {
         case "1":
-            var client1 = new Client
+            Console.Write("Введите ID клиента для изменения телефона: ");
+            if (int.TryParse(Console.ReadLine(), out int id1))
             {
-                FirstName = "Дмитрий",
-                LastName = "Соколов",
-                BirthDate = new DateOnly(2000, 5, 15),
-                Phone = "79995554433",
-                Email = "sokolov@example.com",
-                RegistrationDate = DateOnly.FromDateTime(DateTime.Today),
-                Status = "active"
-            };
+                var client1 = await db.Clients.FirstOrDefaultAsync(c => c.ClientId == id1);
+                if (client1 is null)
+                {
+                    Console.WriteLine("Клиент не найден.");
+                    break;
+                }
 
-            db.Clients.Add(client1);
-            int saved = await db.SaveChangesAsync();
-
-            Console.WriteLine($"Сохранено изменений: {saved}");
-            Console.WriteLine($"ID нового клиента: {client1.ClientId}");
+                client1.Phone = "79990001122";
+                await db.SaveChangesAsync();
+                Console.WriteLine("Телефон изменён.");
+            }
             break;
 
         case "2":
-            Console.Write("Имя: ");
-            string firstName = Console.ReadLine()?.Trim() ?? string.Empty;
-
-            Console.Write("Фамилия: ");
-            string lastName = Console.ReadLine()?.Trim() ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+            Console.Write("Введите ID клиента для удаления: ");
+            if (int.TryParse(Console.ReadLine(), out int id2))
             {
-                Console.WriteLine("Имя и фамилия обязательны.");
-                break;
+                var client2 = await db.Clients.FindAsync(id2);
+                if (client2 is null)
+                {
+                    Console.WriteLine("Клиент не найден.");
+                    break;
+                }
+
+                db.Clients.Remove(client2);
+                await db.SaveChangesAsync();
+                Console.WriteLine("Клиент удалён.");
             }
-
-            var client2 = new Client
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                RegistrationDate = DateOnly.FromDateTime(DateTime.Today),
-                Status = "active"
-            };
-
-            db.Clients.Add(client2);
-            await db.SaveChangesAsync();
-            Console.WriteLine($"Клиент {firstName} {lastName} успешно добавлен!");
             break;
 
         case "3":
-            Console.WriteLine("Введите имя (попробуйте ввести больше 100 символов для проверки ошибки):");
-            string badName = Console.ReadLine() ?? "Тест";
-
-            var client3 = new Client
+            db.Clients.Add(new Client
             {
-                FirstName = badName,
-                LastName = "Тестов",
+                FirstName = "Анна",
+                LastName = "Смирнова",
                 RegistrationDate = DateOnly.FromDateTime(DateTime.Today),
                 Status = "active"
-            };
+            });
 
-            try
-            {
-                db.Clients.Add(client3);
-                await db.SaveChangesAsync();
-                Console.WriteLine($"Клиент добавлен. ID: {client3.ClientId}");
-            }
-            catch (DbUpdateException ex)
-            {
-                Console.WriteLine("Не удалось сохранить клиента. Проверьте данные и ограничения БД.");
-                Console.WriteLine(ex.GetBaseException().Message);
-            }
+            var existing = await db.Clients.FindAsync(1);
+            if (existing is not null)
+                existing.Status = "inactive";
+
+            await db.SaveChangesAsync();
+            Console.WriteLine("Добавлена Анна, а клиенту с ID 1 установлен статус inactive.");
             break;
 
         case "0":
