@@ -11,8 +11,9 @@ public sealed class Client
     public string? Phone { get; set; }
     public string? Email { get; set; }
 
-    public DateOnly RegistrationDate { get; set; } =
-        DateOnly.FromDateTime(DateTime.Today);
+    public DateOnly RegistrationDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 
     public string Status { get; set; } = "active";
+
+    public List<Visit> Visits { get; set; } = new();
 }
