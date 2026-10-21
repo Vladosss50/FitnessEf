@@ -7,12 +7,10 @@ await using var db = new FitnessContext();
 
 while (true)
 {
-    Console.WriteLine("\n--- МЕНЮ ЗАДАНИЯ 5 ---");
-    Console.WriteLine("1. Показать активных клиентов (5.1)");
-    Console.WriteLine("2. Поиск по фамилии (5.2)");
-    Console.WriteLine("3. Поиск по ID (5.3)");
-    Console.WriteLine("4. Статистика (количество и наличие) (5.4)");
-    Console.WriteLine("5. Постраничная загрузка (5.5)");
+    Console.WriteLine("\n--- МЕНЮ ЗАДАНИЯ 6 (Добавление данных) ---");
+    Console.WriteLine("1. Добавить тестового клиента (Дмитрий Соколов) ");
+    Console.WriteLine("2. Добавить клиента с проверкой ввода ");
+    Console.WriteLine("3. Добавить клиента с обработкой ошибок ");
     Console.WriteLine("0. Выход");
     Console.Write("Выберите пункт: ");
 
@@ -21,84 +19,73 @@ while (true)
     switch (choice)
     {
         case "1":
+            var client1 = new Client
+            {
+                FirstName = "Дмитрий",
+                LastName = "Соколов",
+                BirthDate = new DateOnly(2000, 5, 15),
+                Phone = "79995554433",
+                Email = "sokolov@example.com",
+                RegistrationDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = "active"
+            };
 
-            Console.WriteLine("\nАктивные клиенты:");
-            var activeClients = await db.Clients
-                .AsNoTracking()
-                .Where(c => c.Status == "active")
-                .OrderBy(c => c.LastName)
-                .ToListAsync();
-            foreach (var c in activeClients)
-                Console.WriteLine($"{c.ClientId}: {c.FirstName} {c.LastName}");
+            db.Clients.Add(client1);
+            int saved = await db.SaveChangesAsync();
+
+            Console.WriteLine($"Сохранено изменений: {saved}");
+            Console.WriteLine($"ID нового клиента: {client1.ClientId}");
             break;
 
         case "2":
+            Console.Write("Имя: ");
+            string firstName = Console.ReadLine()?.Trim() ?? string.Empty;
 
-            Console.Write("Фрагмент фамилии: ");
-            string term = Console.ReadLine()?.Trim() ?? string.Empty;
-            if (term.Length == 0)
-            {
-                Console.WriteLine("Строка поиска не задана.");
-            }
-            else
-            {
-                var found = await db.Clients
-                    .AsNoTracking()
-                    .Where(c => c.LastName.Contains(term))
-                    .OrderBy(c => c.LastName)
-                    .ToListAsync();
+            Console.Write("Фамилия: ");
+            string lastName = Console.ReadLine()?.Trim() ?? string.Empty;
 
-                if (found.Count == 0) Console.WriteLine("Ничего не найдено.");
-                foreach (var c in found)
-                    Console.WriteLine($"{c.ClientId}: {c.FirstName} {c.LastName}");
+            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+            {
+                Console.WriteLine("Имя и фамилия обязательны.");
+                break;
             }
+
+            var client2 = new Client
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                RegistrationDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = "active"
+            };
+
+            db.Clients.Add(client2);
+            await db.SaveChangesAsync();
+            Console.WriteLine($"Клиент {firstName} {lastName} успешно добавлен!");
             break;
 
         case "3":
+            Console.WriteLine("Введите имя (попробуйте ввести больше 100 символов для проверки ошибки):");
+            string badName = Console.ReadLine() ?? "Тест";
 
-            Console.Write("ID клиента: ");
-            if (int.TryParse(Console.ReadLine(), out int id) && id > 0)
+            var client3 = new Client
             {
-                var client = await db.Clients.FindAsync(id);
-                if (client is null)
-                    Console.WriteLine("Клиент не найден.");
-                else
-                    Console.WriteLine($"{client.ClientId}: {client.FirstName} {client.LastName}");
-            }
-            else
+                FirstName = badName,
+                LastName = "Тестов",
+                RegistrationDate = DateOnly.FromDateTime(DateTime.Today),
+                Status = "active"
+            };
+
+            try
             {
-                Console.WriteLine("ID должен быть положительным целым числом.");
+                db.Clients.Add(client3);
+                await db.SaveChangesAsync();
+                Console.WriteLine($"Клиент добавлен. ID: {client3.ClientId}");
             }
-            break;
-
-        case "4":
-
-            int total = await db.Clients.CountAsync();
-            bool hasInactive = await db.Clients.AnyAsync(c => c.Status == "inactive");
-            int activeCount = await db.Clients.CountAsync(c => c.Status == "active");
-
-            Console.WriteLine($"\nВсего клиентов: {total}");
-            Console.WriteLine($"Активных клиентов: {activeCount}");
-            Console.WriteLine(hasInactive
-                ? "Есть неактивные клиенты."
-                : "Неактивные клиенты отсутствуют.");
-            break;
-
-        case "5":
-
-            int page = 1; 
-            int pageSize = 2; 
-
-            var pageOfClients = await db.Clients
-                .AsNoTracking()
-                .OrderBy(c => c.ClientId)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            Console.WriteLine($"\nСтраница {page} (размер {pageSize}):");
-            foreach (var c in pageOfClients)
-                Console.WriteLine($"{c.ClientId}: {c.FirstName} {c.LastName}");
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine("Не удалось сохранить клиента. Проверьте данные и ограничения БД.");
+                Console.WriteLine(ex.GetBaseException().Message);
+            }
             break;
 
         case "0":
