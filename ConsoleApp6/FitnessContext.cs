@@ -32,29 +32,19 @@ public sealed class FitnessContext : DbContext
             entity.Property(c => c.Email).HasColumnName("email").HasMaxLength(254);
             entity.Property(c => c.RegistrationDate).HasColumnName("registration_date").HasColumnType("date").IsRequired();
             entity.Property(c => c.Status).HasColumnName("status").HasMaxLength(20).IsRequired();
+
+            // Добавленная настройка
+            entity.Property(c => c.Note).HasColumnName("note").HasMaxLength(500);
         });
 
         modelBuilder.Entity<Visit>(entity =>
         {
             entity.ToTable("visits");
             entity.HasKey(v => v.VisitId);
-
-            entity.Property(v => v.VisitId)
-                .HasColumnName("visit_id")
-                .ValueGeneratedOnAdd();
-
-            entity.Property(v => v.ClientId)
-                .HasColumnName("client_id")
-                .IsRequired();
-
-            entity.Property(v => v.VisitDate)
-                .HasColumnName("visit_date")
-                .HasColumnType("date")
-                .IsRequired();
-
-            entity.Property(v => v.Note)
-                .HasColumnName("note")
-                .HasMaxLength(500);
+            entity.Property(v => v.VisitId).HasColumnName("visit_id").ValueGeneratedOnAdd();
+            entity.Property(v => v.ClientId).HasColumnName("client_id").IsRequired();
+            entity.Property(v => v.VisitDate).HasColumnName("visit_date").HasColumnType("date").IsRequired();
+            entity.Property(v => v.Note).HasColumnName("note").HasMaxLength(500);
 
             entity.HasOne(v => v.Client)
                 .WithMany(c => c.Visits)
